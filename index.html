@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Urban Psychotic Chatbot</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #111;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+    }
+
+    /* ✅ WhatsApp Green Chat Button */
+    #chat-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #25D366;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      transition: 0.3s;
+      z-index: 1000;
+    }
+
+    /* ✅ WhatsApp Chat Window */
+    #chat-box {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 330px;
+      height: 470px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 999;
+    }
+
+    /* ✅ WhatsApp Header */
+    #chat-header {
+      background: #075E54;
+      color: #fff;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+    }
+
+    /* ✅ WhatsApp DP Icon */
+    #chat-header::before {
+      content: "";
+      width: 32px;
+      height: 32px;
+      background: url('svglogo.png');
+      background-size: cover;
+      border-radius: 50%;
+    }
+
+    /* ✅ WhatsApp Chat Background */
+    #chat-messages {
+      flex: 1;
+      padding: 12px;
+      overflow-y: auto;
+      background: url('Whatsapp Chat Background.jpg');
+      background-size: cover;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ✅ Chat Bubble Base */
+    .msg {
+      margin: 6px 0;
+      padding: 10px 14px;
+      max-width: 80%;
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    /* ✅ Sent Message (User) */
+    .user {
+      background: #DCF8C6;
+      align-self: flex-end;
+      border-radius: 10px 0px 10px 10px;
+    }
+
+    /* ✅ Received Message (Bot) */
+    .bot {
+      background: #ffffff;
+      border-radius: 0px 10px 10px 10px;
+      border: 1px solid #ececec;
+      align-self: flex-start;
+    }
+
+    .bot a {
+      color: #085f53;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    /* ✅ WhatsApp Menu Options (unchanged logic) */
+    .menu-option {
+      background: #ffffff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin: 5px 0;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .menu-option:hover {
+      background: #DCF8C6;
+    }
+
+    /* ✅ Input Area */
+    #chat-input {
+      display: flex;
+      padding: 6px;
+      background: #f0f0f0;
+      border-top: 1px solid #ddd;
+    }
+
+    #chat-input input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #ddd;
+      outline: none;
+      font-size: 14px;
+    }
+
+    #chat-input button {
+      background: #075E54;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      margin-left: 6px;
+      padding-left: 10px;
+      width: 44px;
+      height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ✅ Hide scrollbar */
+    #chat-messages::-webkit-scrollbar {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ✅ Floating Chat Button -->
+  <button id="chat-toggle"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt=""></button>
+
+  <!-- ✅ Popup Message (Untouched) -->
+  <div id="wa-popup" onclick="openWA()" style="
+    position: fixed;
+    bottom: 15px;
+    right: 95px;
+    background: #ffffff;
+    width: 220px;
+    padding: 14px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    cursor: pointer;
+    display: none;
+    animation: fadeIn 0.4s ease;
+    z-index: 999999;
+  ">
+    <p style="margin:0; font-size:12px; color:#262626;">
+      🎁 GET A SPECIAL DISCOUNT ON YOUR FIRST ORDER — TAP HERE..
+    </p>
+  </div>
+
+  <!-- ✅ Chat Window -->
+  <div id="chat-box">
+    <div id="chat-header">Urban Psychotic Bot</div>
+    <div id="chat-messages"></div>
+
+    <div id="chat-input">
+      <input id="userInput" type="text" placeholder="Type a message..."
+        onkeydown="if(event.key==='Enter') handleUserInput()">
+      <button id="sendBtn">➤</button>
+    </div>
+  </div>
+
+  <!-- ✅ Your Original JavaScript (100% Unchanged) -->
+  <script>
+    const chatBox = document.getElementById('chat-box');
+    const toggle = document.getElementById('chat-toggle');
+    const messages = document.getElementById('chat-messages');
+    const input = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    toggle.onclick = () => {
+      chatBox.style.display = chatBox.style.display === 'flex' ? 'none' : 'flex';
+      if (messages.innerHTML === '') showWelcome();
+    };
+
+    function showWelcome() {
+      addMessage('Welcome to Urban Psychotic! Streetwear redefined.', 'bot');
+      addMessage(' How can we assist you today?', 'bot');
+    }
+
+    function addMessage(text, sender) {
+      const div = document.createElement('div');
+      div.classList.add('msg', sender);
+      div.innerHTML = text;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function handleUserInput() {
+      const text = input.value.trim().toLowerCase();
+      if (!text) return;
+
+      addMessage(text, 'user');
+      input.value = '';
+
+      if (text === 'menu') {
+        showMenu();
+        return;
+      }
+
+      const reply = getBotReply(text);
+      setTimeout(() => addMessage(reply, 'bot'), 600);
+    }
+
+    function showMenu() {
+      const menuHTML = `
+        <div class="menu-option" onclick="selectOption('track order')">🚚 Track Order</div>
+        <div class="menu-option" onclick="selectOption('delivery')">📦 Delivery Info</div>
+        <div class="menu-option" onclick="selectOption('return')">🔁 Returns Policy</div>
+        <div class="menu-option" onclick="selectOption('international')">🌍 International Shipping</div>
+        <div class="menu-option" onclick="selectOption('payment')">💳 Payment Options</div>
+        <div class="menu-option" onclick="selectOption('size')">📏 Size Guide</div>
+        <div class="menu-option" onclick="selectOption('offers')">🎉 Offers</div>
+        <div class="menu-option" onclick="selectOption('contact')">📧 Contact Us</div>
+        <div class="menu-option" onclick="selectOption('store')">🏬 Store Info</div>
+      `;
+      addMessage(menuHTML, 'bot');
+    }
+
+    function selectOption(option) {
+      addMessage(option, 'user');
+      const reply = getBotReply(option);
+      setTimeout(() => addMessage(reply, 'bot'), 600);
+    }
+
+    function getBotReply(msg) {
+      msg = msg.toLowerCase();
+      let reply = 'Sorry, I didn’t understand that. Type "menu" for FAQs.';
+
+      if (msg.includes('track') || msg.includes('order'))
+        reply = `You can track your order here 👉 <a href="https://urbanpsychotic.com/apps/track123" target="_blank">Track Order</a>`;
+      else if (msg.includes('delivery')) reply = 'Our delivery time is 3–5 days pan India 🚚';
+      else if (msg.includes("hi") || msg.includes("hello")) reply = "Hello 👋 How can I help you?";
+      else if (msg.includes('return')) reply = 'We accept returns within 7 days of delivery 🛍️';
+      else if (msg.includes('payment')) reply = 'We accept Credit/Debit Cards, UPI, and Net Banking 💳';
+      else if (msg.includes('urbanpsychotic') || msg.includes('urban psychotic') || msg.includes('urban-psychotic'))
+        reply =
+          'Urban Psychotic is a bold streetwear brand in India. Shop identity-driven urban fashion and streetwear clothing for fearless rebels and rule-breakers.';
+      else if (msg.includes('size'))
+        reply = `Check our size guide here 📏 <a href="https://urbanpsychotic.com/pages/size-chart" target="_blank">Size Guide</a>`;
+      else if (msg.includes('offer') || msg.includes('discount'))
+        reply = `See current offers here 🎉 <a href="https://urbanpsychotic.com/" target="_blank">View Offers</a>`;
+      else if (msg.includes('contact'))
+        reply = `You can contact us at 📧 <a href="mailto:hello@urbanpsychotic.com">hello@urbanpsychotic.com</a>`;
+      else if (msg.includes('store'))
+        reply = `We’re an online-only store 🛍️ — visit <a href="https://urbanpsychotic.com" target="_blank">Urban Psychotic</a>`;
+
+      return reply;
+    }
+
+    sendBtn.onclick = handleUserInput;
+
+    function openWA() {
+      window.open("https://wa.me/919398379060?text=i%20have%20a%20query");
+    }
+
+    setTimeout(() => {
+      const popup = document.getElementById("wa-popup");
+      popup.style.display = "block";
+      setTimeout(() => popup.style.display = "none", 15000);
+    }, 3000);
+  </script>
+
+</body>
+</html>
